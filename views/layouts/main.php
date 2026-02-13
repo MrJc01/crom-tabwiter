@@ -44,6 +44,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         .mt-2 { margin-top:0.5rem; }
         .mb-2 { margin-bottom:0.5rem; }
         .whitespace-pre-wrap { white-space:pre-wrap; }
+        .tag { color:#2563EB; cursor:pointer; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900">
