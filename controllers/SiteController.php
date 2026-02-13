@@ -3,43 +3,71 @@
 namespace app\controllers;
 
 use Yii;
-use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\web\Response;
-use yii\filters\VerbFilter;
-use app\models\LoginForm;
-use app\models\ContactForm;
+use app\models\Post;
+use app\models\PostTag;
+use app\models\User;
+use GuzzleHttp\Client;
 
 class SiteController extends Controller
 {
     /**
-     * {@inheritdoc}
+     * Displays the main feed (React App).
+     * Now handles the logic previously in PostManager::actionIndex.
      */
-    public function behaviors()
+    public function actionIndex()
     {
-        return [
-            'access' => [
-                'class' => AccessControl::class,
-                'only' => ['logout'],
-                'rules' => [
-                    [
-                        'actions' => ['logout'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                    ],
-                ],
-            ],
-            'verbs' => [
-                'class' => VerbFilter::class,
-                'actions' => [
-                    'logout' => ['post'],
-                ],
-            ],
-        ];
+        // Auto-login logic (from AuthController/PostController)
+        if (Yii::$app->user->isGuest) {
+            $hash = Yii::$app->request->cookies->getValue('tw_hash');
+            if ($hash) {
+                $user = User::findIdentityByAccessToken($hash);
+                if ($user) {
+                    Yii::$app->user->login($user);
+                }
+            }
+            if (Yii::$app->user->isGuest) {
+                $user = User::createGuest();
+                Yii::$app->user->login($user, 3600 * 24 * 7);
+                Yii::$app->response->cookies->add(new \yii\web\Cookie([
+                    'name' => 'tw_hash',
+                    'value' => $user->auth_hash,
+                    'expire' => time() + 3600 * 24 * 30,
+                ]));
+            }
+        }
+
+        $currentUser = Yii::$app->user->identity;
+        if ($currentUser) {
+            $currentUser->updateActivity();
+        }
+
+        // Fetch local posts
+        $posts = Post::find()
+            ->with('user')
+            ->orderBy(['created_at' => SORT_DESC])
+            ->limit(50)
+            ->all();
+
+        // Fetch external/trending data
+        $trendingData = PostTag::getTrending(5);
+        $trending = array_map(function ($t) {
+            return [
+                'tag' => $t['tag'],
+                'count' => (int) $t['cnt'], // React expects 'count'
+            ];
+        }, $trendingData);
+
+        return $this->render('index', [
+            'posts' => $posts,
+            'trending' => $trending,
+            'currentUser' => $currentUser,
+            'external' => [], // Placeholder for now or fetch TabNews if needed
+        ]);
     }
 
     /**
-     * {@inheritdoc}
+     * Error handler.
      */
     public function actions()
     {
@@ -47,82 +75,6 @@ class SiteController extends Controller
             'error' => [
                 'class' => 'yii\web\ErrorAction',
             ],
-            'captcha' => [
-                'class' => 'yii\captcha\CaptchaAction',
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
-            ],
         ];
-    }
-
-    /**
-     * Displays homepage.
-     *
-     * @return string
-     */
-    public function actionIndex()
-    {
-        return $this->render('index');
-    }
-
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!Yii::$app->user->isGuest) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
-    }
-
-    /**
-     * Displays contact page.
-     *
-     * @return Response|string
-     */
-    public function actionContact()
-    {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
-        }
-        return $this->render('contact', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
     }
 }

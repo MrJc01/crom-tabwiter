@@ -34,7 +34,8 @@ class User extends ActiveRecord implements IdentityInterface
                 'class' => TimestampBehavior::class,
                 'createdAtAttribute' => 'created_at',
                 'updatedAtAttribute' => false,
-                'value' => function() { return time(); },
+                'value' => function () {
+                    return time(); },
             ],
         ];
     }
@@ -55,7 +56,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         if (parent::beforeSave($insert)) {
             if ($insert && empty($this->auth_hash)) {
-                // generate a random hash for guest access
                 $this->auth_hash = Yii::$app->security->generateRandomString();
             }
             return true;
@@ -63,7 +63,8 @@ class User extends ActiveRecord implements IdentityInterface
         return false;
     }
 
-    // IdentityInterface implementation
+    // --- Identity Interface ---
+
     public static function findIdentity($id)
     {
         return static::findOne($id);
@@ -92,5 +93,60 @@ class User extends ActiveRecord implements IdentityInterface
     public function validateAuthKey($authKey)
     {
         return $this->auth_hash === $authKey;
+    }
+
+    // --- TabWiter Business Logic ---
+
+    /**
+     * Update last_active_at timestamp.
+     */
+    public function updateActivity()
+    {
+        $this->last_active_at = time();
+        return $this->save(false, ['last_active_at']);
+    }
+
+    /**
+     * Check if user has mana available to vote.
+     */
+    public function hasMana(): bool
+    {
+        return $this->mana_weekly > 0;
+    }
+
+    /**
+     * Spend one unit of mana.
+     */
+    public function spendMana(): bool
+    {
+        if (!$this->hasMana()) {
+            return false;
+        }
+        $this->mana_weekly--;
+        return $this->save(false, ['mana_weekly']);
+    }
+
+    /**
+     * Create a guest user with random name and hash.
+     */
+    public static function createGuest(): self
+    {
+        $user = new self();
+        $user->username = 'guest_' . substr(Yii::$app->security->generateRandomString(8), 0, 8);
+        $user->auth_hash = Yii::$app->security->generateRandomString();
+        $user->tabcoins_balance = 0;
+        $user->mana_weekly = 3; // guests start with 3 mana
+        $user->is_validated = false;
+        $user->last_active_at = time();
+        $user->save();
+        return $user;
+    }
+
+    /**
+     * Get posts by this user.
+     */
+    public function getPosts()
+    {
+        return $this->hasMany(Post::class, ['user_id' => 'id']);
     }
 }

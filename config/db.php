@@ -2,11 +2,16 @@
 
 return [
     'class' => 'yii\db\Connection',
-    // local sqlite file for lightweight storage
     'dsn' => 'sqlite:' . __DIR__ . '/../data/tabwiter.db',
     'charset' => 'utf8',
 
-    // Schema cache options (for production environment)
+    // Enable foreign keys for SQLite
+    'on afterOpen' => function ($event) {
+        /** @var yii\db\Connection $db */
+        $event->sender->createCommand('PRAGMA foreign_keys = ON')->execute();
+    },
+
+    // Schema cache for production
     //'enableSchemaCache' => true,
     //'schemaCacheDuration' => 60,
     //'schemaCache' => 'cache',

@@ -1,92 +1,80 @@
-# TabWiter - Ecossistema Dev 🚀
+# TabWiter — Ecossistema Dev Efêmero 🚀
 
-**TabWiter** é uma plataforma moderna para desenvolvedores, unindo o poder do backend **Yii2** com a agilidade e estética de um frontend baseado em **React** e **Tailwind CSS**. 
+Plataforma moderna para desenvolvedores, unindo **Yii2** (backend) com **Alpine.js** + **Tailwind CSS** (frontend). Identidade via Hash e validação pela Bio do TabNews.
 
-Inspirado no TabNews e no ecossistema do Twitter, o projeto oferece uma interface premium para troca de conhecimento técnico e visualização de conteúdo híbrido (local e externo).
+## Stack
+- **Backend:** Yii 2.0 · PHP 8.1+ · SQLite
+- **Frontend:** Alpine.js 3 · Tailwind CSS 3.4
+- **Ícones:** Inline SVG · **Fontes:** Inter · JetBrains Mono
 
----
+## Setup Rápido
 
-## 🛠️ Stack Tecnológica
-
-- **Backend:** [Yii Framework 2.0](https://www.yiiframework.com/) (PHP 8.3+)
-- **Frontend:** [React 18](https://react.dev/) + [Babel Standalone](https://babeljs.io/)
-- **Estilização:** [Tailwind CSS 3.4](https://tailwindcss.com/)
-- **Ícones:** [Lucide React](https://lucide.dev/)
-- **Banco de Dados:** SQLite (Leve e Eficiente)
-
----
-
-## 📂 Estrutura de Diretórios 
-
-- `assets/`: Definições de bundles de assets do Yii2.
-- `config/`: Configurações da aplicação (DB, Web, Console).
-- `controllers/`: Lógica de roteamento e processamento (Post, Auth, etc).
-- `data/`: Armazenamento do banco de dados SQLite.
-- `models/`: Modelos de Active Record (User, Post).
-- `runtime/`: Arquivos temporários gerados pelo Yii (logs, cache).
-- `views/`: Templates PHP que injetam os componentes React.
-- `web/`: Entry point público e recursos estáticos (CSS/JS).
-
----
-
-## 🚀 Instalação e Configuração
-
-### 1. Requisitos
-- PHP 8.1 ou superior.
-- Composer.
-- SQLite habilitado no PHP.
-
-### 2. Preparação do Ambiente
-Após clonar o repositório, instale as dependências:
 ```bash
+# 1. Dependências
 composer install
-```
 
-### 3. Banco de Dados e Permissões
-É fundamental que os diretórios de escrita existam e tenham as permissões corretas para o SQLite e logs.
-
-```bash
-# Criar diretório do banco se não existir
+# 2. Banco de dados
 mkdir -p data
-
-# Corrigir permissões (Linux/macOS)
 chmod -R 775 data runtime
-```
-
-### 4. Migrações
-Inicialize a estrutura do banco de dados:
-```bash
 php yii migrate --interactive=0
-```
 
----
-
-## 🏃 Executando o Projeto
-
-Inicie o servidor de desenvolvimento do Yii:
-```bash
+# 3. Iniciar servidor
 php yii serve --port=8080
 ```
+
 Acesse: [http://localhost:8080](http://localhost:8080)
 
+## Regras de Negócio
+| Regra | Detalhe |
+|-------|---------|
+| **Acesso** | Imediato via Hash (guest auto-criado) |
+| **Validação** | Bio do TabNews contém o hash |
+| **Decay** | Posts perdem 1 ponto/dia |
+| **Morte** | Post deletado ao atingir -10 pontos |
+| **Mana** | Semanal, baseada no saldo TabCoins |
+| **Self-vote** | Bloqueado |
+| **Char Limit** | 500 por post |
+
+## Configuração do Cron (Reaper)
+
+As tarefas automáticas de manutenção devem ser agendadas via cron:
+
+```cron
+# Decay diário (3h da manhã)
+0 3 * * * cd /path/to/tabwiter && php yii reaper/decay
+
+# Purge de guests inativos (a cada 6h)
+0 */6 * * * cd /path/to/tabwiter && php yii reaper/purge-inactives
+
+# Sync de mana semanal (Segunda 00:00)
+0 0 * * 1 cd /path/to/tabwiter && php yii reaper/sync-mana
+```
+
+Os logs de execução ficam em `runtime/reaper.log`.
+
+## Estrutura de Diretórios
+```
+controllers/     PostController, AuthController, SiteController
+models/          User, Post, PostTag, Vote
+commands/        ReaperController (decay, purge, mana sync)
+views/           Alpine.js templates (3-column layout)
+web/js/          tracker.js (interest tracking local-first)
+data/            SQLite database
+config/          web.php, db.php, params.php
+migrations/      3 migrations (user, post, tags+votes)
+```
+
+## Dark Mode
+Ativado automaticamente pela preferência do sistema (`prefers-color-scheme: dark`).
+
+## Solução de Problemas
+
+| Erro | Causa/Solução |
+|------|---------------|
+| `unable to open database` | `mkdir -p data && chmod 775 data` |
+| Mana insuficiente | Aguarde reset semanal ou valide conta TabNews |
+| CSRF mismatch em AJAX | Endpoints API têm CSRF desabilitado |
+
 ---
 
-## 🔍 Solução de Problemas Comuns
-
-### Erro: `SQLSTATE[HY000] [14] unable to open database file`
-Este erro ocorre quando o processo do servidor PHP não consegue escrever no diretório `data/` ou no arquivo `tabwiter.db`.
-- **Causa:** Diretório `data/` inexistente ou falta de permissões de escrita.
-- **Solução:** Execute `mkdir -p data` e `chmod -R 775 data runtime`. Certifique-se de que o usuário que roda o servidor tem permissão de escrita.
-
----
-
-## 🎨 Novo Design (Release v1.1)
-O design foi atualizado para uma experiência SPA (Single Page Application) dentro do Yii2, trazendo:
-- **Feed Híbrido:** Integração suave entre posts locais e conteúdos do ecossistema dev.
-- **Sistema de Votação (Tabcoins):** Interface inspirada no TabNews.
-- **Design System:** Paleta de cores customizada, animações de entrada e tipografia moderna (Inter/JetBrains Mono).
-- **Responsividade Total:** Sidebar retrátil e layout otimizado para mobile.
-
----
-
-&copy; <?= date('Y') ?> TabWiter - Criado para a comunidade DEV.
+&copy; TabWiter — Código efêmero para a comunidade DEV.

@@ -1,89 +1,73 @@
 <?php
-
 /** @var yii\web\View $this */
 /** @var string $content */
 
 use yii\helpers\Html;
+use app\assets\AppAsset;
 
-$this->registerCsrfMetaTags();
-$this->registerMetaTag(['charset' => Yii::$app->charset], 'charset');
-$this->registerMetaTag(['name' => 'viewport', 'content' => 'width=device-width, initial-scale=1.0']);
-$this->registerMetaTag(['name' => 'description', 'content' => $this->params['meta_description'] ?? 'TabWiter - Ecossistema Dev']);
-$this->registerMetaTag(['name' => 'keywords', 'content' => $this->params['meta_keywords'] ?? '']);
-$this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii::getAlias('@web/favicon.ico')]);
+AppAsset::register($this);
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="<?= Yii::$app->language ?>">
+
 <head>
     <meta charset="<?= Yii::$app->charset ?>">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <?php $this->registerCsrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
-    <?php $this->head() ?>
 
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-
-    <!-- Babel for JSX -->
+    <!-- React Stack (Production) -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Lucide React -->
-    <script>
-        window.react = window.React;
-        window.reactDom = window.ReactDOM;
-    </script>
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    colors: {
+                        tab: {
+                            bg: '#f8f9fa',
+                            text: '#1f2937',
+                            border: '#e5e7eb',
+                            accent: '#6366f1',
+                            link: '#2563eb',
+                            muted: '#6b7280'
+                        }
+                    },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
-                    },
-                    colors: {
-                        tab: {
-                            bg: '#FAFAFA',
-                            card: '#FFFFFF',
-                            border: '#E5E5E5',
-                            text: '#171717',
-                            muted: '#737373',
-                            accent: '#238636',
-                            accentLight: '#dafbe1',
-                            link: '#0969DA',
-                            danger: '#CF222E'
-                        }
-                    },
-                    animation: {
-                        'enter': 'enter 0.3s ease-out forwards',
-                    },
-                    keyframes: {
-                        enter: {
-                            '0%': { opacity: '0', transform: 'translateY(10px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
                     }
                 }
             }
         }
     </script>
 
-    <link rel="stylesheet" href="<?= Yii::getAlias('@web/css/site.css') ?>">
+    <!-- Icons: Stable UMD Version -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.min.js"></script>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400&display=swap"
+        rel="stylesheet">
+
+    <?php $this->head() ?>
 </head>
-<body>
-<?php $this->beginBody() ?>
 
-<div id="root"></div>
-<?= $content ?>
+<body class="bg-tab-bg text-tab-text font-sans">
+    <?php $this->beginBody() ?>
 
-<?php $this->endBody() ?>
+    <div id="root"></div>
+
+    <?= $content ?>
+
+    <?php $this->endBody() ?>
 </body>
+
 </html>
 <?php $this->endPage() ?>
