@@ -2,97 +2,154 @@
 
 namespace app\models;
 
-use yii\db\ActiveRecord;
-use yii\behaviors\TimestampBehavior;
-use yii\web\IdentityInterface;
 use Yii;
+use yii\base\NotSupportedException;
+use yii\behaviors\TimestampBehavior;
+use yii\db\ActiveRecord;
+use yii\web\IdentityInterface;
 
 /**
- * User model backed by {{%user}} table.
+ * User model
  *
  * @property int $id
  * @property string $username
- * @property string $auth_hash
- * @property string|null $tabnews_id
+ * @property string $email
+ * @property string $password_hash
+ * @property string $auth_key
  * @property int $tabcoins_balance
  * @property int $mana_weekly
  * @property bool $is_validated
- * @property int|null $last_active_at
+ * @property int $last_active_at
  * @property int $created_at
+ * @property int $updated_at
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    /**
+     * {@inheritdoc}
+     */
     public static function tableName()
     {
         return '{{%user}}';
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function behaviors()
     {
         return [
-            [
-                'class' => TimestampBehavior::class,
-                'createdAtAttribute' => 'created_at',
-                'updatedAtAttribute' => false,
-                'value' => function () {
-                    return time(); },
-            ],
+            TimestampBehavior::class, // handles created_at and updated_at
         ];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function rules()
     {
         return [
-            [['username', 'auth_hash'], 'required'],
-            [['username', 'tabnews_id'], 'string', 'max' => 255],
-            [['tabcoins_balance', 'mana_weekly', 'last_active_at', 'created_at'], 'integer'],
+            [['username', 'email', 'password_hash'], 'required'],
+            [['username', 'email', 'password_hash', 'auth_key'], 'string', 'max' => 255],
+            [['username', 'email'], 'unique'],
+            [['tabcoins_balance', 'mana_weekly', 'last_active_at', 'created_at', 'updated_at'], 'integer'],
             [['is_validated'], 'boolean'],
-            ['username', 'unique'],
-            ['auth_hash', 'string', 'max' => 255],
+            ['mana_weekly', 'default', 'value' => 100],
         ];
     }
 
-    public function beforeSave($insert)
-    {
-        if (parent::beforeSave($insert)) {
-            if ($insert && empty($this->auth_hash)) {
-                $this->auth_hash = Yii::$app->security->generateRandomString();
-            }
-            return true;
-        }
-        return false;
-    }
-
-    // --- Identity Interface ---
-
+    /**
+     * {@inheritdoc}
+     */
     public static function findIdentity($id)
     {
-        return static::findOne($id);
+        return static::findOne(['id' => $id]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        return static::findOne(['auth_hash' => $token]);
+        // Standalone usually uses session, but IF we need API token later:
+        // For now, return null unless we implement concrete access token logic
+        // Or if we use auth_key as simple token for cookie login (Yii2 standard)
+        return null;
     }
 
+    /**
+     * Finds user by username (or email if you prefer, but standard is username)
+     *
+     * @param string $username
+     * @return static|null
+     */
     public static function findByUsername($username)
     {
         return static::findOne(['username' => $username]);
     }
 
+    /**
+     * Finds user by email
+     *
+     * @param string $email
+     * @return static|null
+     */
+    public static function findByEmail($email)
+    {
+        return static::findOne(['email' => $email]);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
     public function getId()
     {
-        return $this->id;
+        return $this->getPrimaryKey();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getAuthKey()
     {
-        return $this->auth_hash;
+        return $this->auth_key;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function validateAuthKey($authKey)
     {
-        return $this->auth_hash === $authKey;
+        return $this->getAuthKey() === $authKey;
+    }
+
+    /**
+     * Validates password
+     *
+     * @param string $password password to validate
+     * @return bool if password provided is valid for current user
+     */
+    public function validatePassword($password)
+    {
+        return Yii::$app->security->validatePassword($password, $this->password_hash);
+    }
+
+    /**
+     * Generates password hash from password and sets it to the model
+     *
+     * @param string $password
+     */
+    public function setPassword($password)
+    {
+        $this->password_hash = Yii::$app->security->generatePasswordHash($password);
+    }
+
+    /**
+     * Generates "remember me" authentication key
+     */
+    public function generateAuthKey()
+    {
+        $this->auth_key = Yii::$app->security->generateRandomString();
     }
 
     // --- TabWiter Business Logic ---
@@ -127,23 +184,7 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
-     * Create a guest user with random name and hash.
-     */
-    public static function createGuest(): self
-    {
-        $user = new self();
-        $user->username = 'guest_' . substr(Yii::$app->security->generateRandomString(8), 0, 8);
-        $user->auth_hash = Yii::$app->security->generateRandomString();
-        $user->tabcoins_balance = 0;
-        $user->mana_weekly = 3; // guests start with 3 mana
-        $user->is_validated = false;
-        $user->last_active_at = time();
-        $user->save();
-        return $user;
-    }
-
-    /**
-     * Get posts by this user.
+     * Relation: User has many Posts
      */
     public function getPosts()
     {

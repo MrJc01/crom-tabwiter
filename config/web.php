@@ -42,12 +42,12 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
-                '' => 'site/index', // Home -> Logic in SiteController
-                'POST tabet' => 'post/create',
-                'POST vote/<id:\d+>' => 'post/upvote',
-                'auth/auto' => 'auth/auto-login',
-                'auth/validate' => 'auth/tabnews-validate',
-                'auth/logout' => 'auth/logout',
+                '' => 'site/index',
+                'login' => 'site/login',
+                'signup' => 'site/signup',
+                'logout' => 'site/logout',
+                'create-post' => 'site/create-post',
+                'vote/<id:\d+>' => 'site/upvote',
             ],
         ],
     ],
