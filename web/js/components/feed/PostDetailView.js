@@ -1,9 +1,13 @@
 
+// Dependencies from window
+const { ArrowLeft: ArrowLeftPD } = window;
+const { ContentParser: ContentParserPD } = window;
+
 const PostDetailView = ({ post, onBack, onHashClick }) => (
     <div className="animate-enter">
         <div className="sticky top-0 bg-tab-bg/95 backdrop-blur-sm z-20 py-3 border-b border-tab-border mb-4">
             <button onClick={onBack} className="flex items-center gap-2 text-lg font-bold text-tab-text hover:text-stone-600 transition-colors">
-                {ArrowLeft && <ArrowLeft size={22} />} Tabet
+                {ArrowLeftPD && <ArrowLeftPD size={22} />} Tabet
             </button>
         </div>
 
@@ -19,7 +23,7 @@ const PostDetailView = ({ post, onBack, onHashClick }) => (
             </div>
 
             <div className="text-xl leading-relaxed text-stone-900 whitespace-pre-wrap mb-4">
-                <ContentParser text={post.content} onHashClick={onHashClick} />
+                <ContentParserPD text={post.content} onHashClick={onHashClick} />
             </div>
 
             <div className="text-sm text-tab-muted border-b border-stone-100 pb-4 mb-4">

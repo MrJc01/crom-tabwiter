@@ -1,4 +1,9 @@
 
+const { useState } = React;
+
+// Dependencies from window
+const { Bell, X, MessageSquare, Terminal } = window;
+
 const NotificationDrawer = ({ isOpen, onClose }) => {
     const [activeTab, setActiveTab] = useState('all'); // all, mentions, system
 
@@ -38,7 +43,6 @@ const NotificationDrawer = ({ isOpen, onClose }) => {
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto p-6 bg-stone-50 custom-scrollbar">
                     <div className="space-y-4 max-w-2xl mx-auto">
-                        {/* Mock Notifications */}
                         {[1, 2, 3, 4, 5].map(i => (
                             <div key={i} className="bg-white p-4 rounded-xl border border-stone-100 shadow-sm flex gap-4 hover:border-stone-300 transition-colors animate-enter" style={{ animationDelay: `${i * 50}ms` }}>
                                 <div className="w-12 h-12 rounded-full bg-blue-50 text-[#002776] flex-shrink-0 flex items-center justify-center">

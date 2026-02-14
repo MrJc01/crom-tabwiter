@@ -1,4 +1,9 @@
 
+const { useState } = React;
+
+// Dependencies from window
+const { IconChevronUp, IconChevronDown } = window;
+
 const VoteWidget = ({ post, isArticle, onVoteAttempt }) => {
     const [score, setScore] = useState(post.stats.score);
     const [voteState, setVoteState] = useState(0);
@@ -7,7 +12,6 @@ const VoteWidget = ({ post, isArticle, onVoteAttempt }) => {
     const handleVote = (direction, e) => {
         e.stopPropagation();
 
-        // Block interaction for guests (redirect to login handled outside or simple alert)
         if (window.INITIAL_DATA.isGuest) {
             window.location.href = window.INITIAL_DATA.urls.login;
             return;
@@ -35,9 +39,7 @@ const VoteWidget = ({ post, isArticle, onVoteAttempt }) => {
                 setLoading(false);
                 if (data.success) {
                     setScore(data.points);
-                    setVoteState(1); // Assuming upvote only for now per prompt logic
-                    // Update global mana if needed?
-                    const manaEl = document.getElementById('user-mana-display'); // If it exists outside React
+                    setVoteState(1);
                 } else {
                     alert(data.message || 'Erro ao votar');
                 }

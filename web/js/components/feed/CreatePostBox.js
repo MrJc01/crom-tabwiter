@@ -1,7 +1,12 @@
 
+const { useState: useStateCPB } = React;
+
+// Dependencies from window
+const { Button: ButtonCPB } = window;
+
 const CreatePostBox = ({ onPostCreate }) => {
-    const [content, setContent] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [content, setContent] = useStateCPB('');
+    const [loading, setLoading] = useStateCPB(false);
 
     const handleSubmit = () => {
         if (!content.trim()) return;
@@ -55,9 +60,9 @@ const CreatePostBox = ({ onPostCreate }) => {
                     rows={2}
                 />
                 <div className="flex justify-end pt-2 border-t border-stone-100 mt-2">
-                    <Button primary onClick={handleSubmit} disabled={loading || !content.trim()}>
+                    <ButtonCPB primary onClick={handleSubmit} disabled={loading || !content.trim()}>
                         {loading ? '...' : 'Tabetar'}
-                    </Button>
+                    </ButtonCPB>
                 </div>
             </div>
         </div>

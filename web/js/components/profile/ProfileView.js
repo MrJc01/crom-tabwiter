@@ -1,9 +1,15 @@
 
-const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
-    const [activeTab, setActiveTab] = useState('all'); // all, article, post, retweet
+const { useState: useStatePV } = React;
 
-    // Using main posts for demo
-    const profilePosts = INITIAL_POSTS.filter(post => {
+// Dependencies from window
+const { ArrowLeft: ArrowLeftPV, ShieldCheck: ShieldCheckPV } = window;
+const { PostItem: PostItemPV } = window;
+const { INITIAL_POSTS: INITIAL_POSTS_PV } = window;
+
+const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
+    const [activeTab, setActiveTab] = useStatePV('all');
+
+    const profilePosts = INITIAL_POSTS_PV.filter(post => {
         if (activeTab === 'all') return true;
         if (activeTab === 'article') return post.type === 'article';
         if (activeTab === 'post') return post.type === 'tabet';
@@ -14,17 +20,16 @@ const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
         <div className="animate-enter">
             <div className="mb-4">
                 <button onClick={onBack} className="flex items-center gap-2 text-sm text-tab-muted hover:text-tab-text transition-colors font-medium">
-                    {ArrowLeft && <ArrowLeft size={18} />} Voltar
+                    {ArrowLeftPV && <ArrowLeftPV size={18} />} Voltar
                 </button>
             </div>
 
-            {/* Profile Header Minimalista (TabNews style) */}
             <div className="bg-white border border-tab-border rounded-xl p-6 shadow-sm mb-6">
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         <h1 className="text-2xl font-bold text-tab-text flex items-center gap-2">
                             {user.name}
-                            {user.verified && ShieldCheck && <ShieldCheck size={20} className="text-blue-600 fill-blue-50" />}
+                            {user.verified && ShieldCheckPV && <ShieldCheckPV size={20} className="text-blue-600 fill-blue-50" />}
                         </h1>
                         <div className="text-tab-muted font-mono text-sm">@{user.handle}</div>
                     </div>
@@ -34,7 +39,6 @@ const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
                     </div>
                 </div>
 
-                {/* Bio como Texto Principal */}
                 <div className="text-base leading-relaxed text-stone-800 whitespace-pre-wrap mb-6 font-mono text-sm bg-stone-50 p-4 rounded-lg border border-stone-100">
                     {user.bio}
                 </div>
@@ -47,7 +51,6 @@ const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
                 </div>
             </div>
 
-            {/* Profile Tabs */}
             <div className="flex border-b border-tab-border mb-4">
                 {['all', 'article', 'post', 'retweet'].map(tab => (
                     <button
@@ -61,10 +64,9 @@ const ProfileView = ({ user, onBack, onHashClick, onPostClick }) => {
                 ))}
             </div>
 
-            {/* List */}
             <div className="space-y-4">
                 {profilePosts.length > 0 ? profilePosts.map(post => (
-                    <PostItem
+                    <PostItemPV
                         key={post.id}
                         post={post}
                         onHashClick={onHashClick}
