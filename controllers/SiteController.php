@@ -122,12 +122,23 @@ class SiteController extends Controller
                 'logout' => Url::to(['site/logout']),
                 'createPost' => Url::to(['site/create-post']),
                 'upvote' => Url::to(['site/upvote']),
+                'universes' => Url::to(['site/universes']),
             ]
         ];
 
         return $this->render('index', [
             'initialData' => $initialData,
         ]);
+    }
+
+    /**
+     * Displays universes status page.
+     *
+     * @return string
+     */
+    public function actionUniverses()
+    {
+        return $this->renderPartial('_universes');
     }
 
     /**

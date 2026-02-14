@@ -48,6 +48,7 @@ $config = [
                 'logout' => 'site/logout',
                 'create-post' => 'site/create-post',
                 'vote/<id:\d+>' => 'site/upvote',
+                'universes' => 'site/universes',
             ],
         ],
     ],

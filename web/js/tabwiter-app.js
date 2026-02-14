@@ -1,11 +1,11 @@
-const { useState, useEffect } = React;
+const { useState, useEffect, useRef } = React;
 
 // Icons
 const Icons = window.lucideReact || window.lucide || {};
 const {
     Home, Hash, User, Bell, Mail, Bookmark, MoreHorizontal, Code2,
     MessageSquare, Repeat, Share, ShieldCheck, Terminal, FileText,
-    PenTool, X, Search, ExternalLink, MapPin, Calendar, ArrowLeft
+    PenTool, X, Search, ExternalLink, MapPin, Calendar, ArrowLeft, Globe
 } = Icons;
 
 // --- SVGs Inline (Garantia de Interface) ---
@@ -73,6 +73,8 @@ const Modal = ({ title, message, actionLabel, onConfirm, onClose, singleButton }
         </div>
     </div>
 );
+
+
 
 // --- Content Parser (Highlight Hashtags) ---
 const ContentParser = ({ text, onHashClick }) => {
@@ -483,13 +485,21 @@ const CreatePostBox = ({ onPostCreate }) => {
 const MainApp = () => {
     // UI State
     const [view, setView] = useState('feed'); // feed, profile, post, hashtag
+    const [showUniverses, setShowUniverses] = useState(false); // Universes Slide State
+
+    // Remove Static Loader when App Mounts
+    useEffect(() => {
+        if (window.removeLoader) {
+            window.removeLoader();
+        }
+    }, []);
+
     const [selectedPost, setSelectedPost] = useState(null);
     const [selectedTag, setSelectedTag] = useState(null);
 
     const [showLeftSidebar, setShowLeftSidebar] = useState(false);
     const [showRightSidebar, setShowRightSidebar] = useState(false);
 
-    const [showTabModal, setShowTabModal] = useState(false);
     const [modalConfig, setModalConfig] = useState(null);
 
     // Data State
@@ -501,17 +511,17 @@ const MainApp = () => {
     ]);
     const [activeTabId, setActiveTabId] = useState('home');
 
-    const handleCreateTab = (config) => {
-        // Mock implementation
-        const newTab = {
-            id: Date.now().toString(),
-            label: config.name,
-            filter: { type: config.filterType, tag: config.tag.toLowerCase().trim() }
+    // Message listener to close Universes from iframe
+    useEffect(() => {
+        const handleMessage = (event) => {
+            // Check origin if necessary
+            if (event.data === 'closeUniverses') {
+                setShowUniverses(false);
+            }
         };
-        setTabs([...tabs, newTab]);
-        setActiveTabId(newTab.id);
-        setShowTabModal(false);
-    };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
 
     const handleArticleClick = (post) => {
         setModalConfig({
@@ -558,7 +568,6 @@ const MainApp = () => {
     };
 
     const handlePostCreate = (newPost) => {
-        // Transform API post format to React App format if needed
         const formattedPost = {
             id: newPost.id,
             type: 'tabet', // Default
@@ -573,8 +582,6 @@ const MainApp = () => {
         setPosts([formattedPost, ...posts]);
     };
 
-    // --- Render Content ---
-
     const activeTab = tabs.find(t => t.id === activeTabId);
     const filteredPosts = posts.filter(post => {
         const typeMatch = activeTab.filter.type === 'all' || post.type === activeTab.filter.type;
@@ -583,15 +590,15 @@ const MainApp = () => {
     });
 
     return (
-        <div className="min-h-screen flex justify-center bg-tab-bg text-tab-text font-sans">
+        <div className="min-h-screen flex justify-center bg-tab-bg text-tab-text font-sans overflow-x-hidden">
+
+
 
             {/* Popups */}
-            {/* TabConfigModal implementation skipped for brevity, easy to add back if needed */}
             {modalConfig && <Modal {...modalConfig} />}
 
             {/* --- Left Sidebar --- */}
             <>
-                {/* Left Sidebar Overlay */}
                 {showLeftSidebar && (
                     <div
                         className="fixed inset-0 bg-black/20 z-40"
@@ -610,10 +617,10 @@ const MainApp = () => {
                             <span className="font-bold text-xl">TabWiter</span>
                         </div>
                         <nav className="flex flex-col gap-2">
-                            <div onClick={() => { setView('feed'); setShowLeftSidebar(false); }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer ${view === 'feed' ? 'bg-stone-100 font-bold' : 'hover:bg-stone-50 text-tab-muted'}`}>
+                            <div onClick={() => { setView('feed'); setShowLeftSidebar(false); setShowUniverses(false); }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer ${view === 'feed' && !showUniverses ? 'bg-stone-100 font-bold' : 'hover:bg-stone-50 text-tab-muted'}`}>
                                 {Home && <Home size={20} />} <span className="text-base">Home</span>
                             </div>
-                            <div onClick={() => { if (window.INITIAL_DATA.isGuest) { window.location.href = window.INITIAL_DATA.urls.login; } else { setView('profile'); } setShowLeftSidebar(false); }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer ${view === 'profile' ? 'bg-stone-100 font-bold' : 'hover:bg-stone-50 text-tab-muted'}`}>
+                            <div onClick={() => { if (window.INITIAL_DATA.isGuest) { window.location.href = window.INITIAL_DATA.urls.login; } else { setView('profile'); } setShowLeftSidebar(false); setShowUniverses(false); }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer ${view === 'profile' ? 'bg-stone-100 font-bold' : 'hover:bg-stone-50 text-tab-muted'}`}>
                                 {User && <User size={20} />} <span className="text-base">Perfil</span>
                             </div>
                             <div className="mt-auto pt-4 border-t border-stone-100">
@@ -642,97 +649,126 @@ const MainApp = () => {
                 flex-1 min-h-screen transition-all duration-300
                 ${!window.INITIAL_DATA.isGuest && showLeftSidebar ? 'sm:ml-64' : ''} 
                 ${!window.INITIAL_DATA.isGuest && showRightSidebar ? 'lg:mr-80' : ''}
+                relative
+                overflow-hidden
             `}>
-                <div className="max-w-3xl mx-auto w-full">
 
-                    {/* --- HEADER CONTEXTUAL --- */}
-                    <div className="sticky top-0 z-30 bg-tab-bg/95 backdrop-blur-sm border-b border-tab-border px-4 py-3 flex justify-between items-center shadow-sm">
-                        <div className="flex items-center gap-3">
-                            {view === 'feed' ? (
-                                <button onClick={() => setShowLeftSidebar(!showLeftSidebar)} className="p-2 rounded-md hover:bg-stone-200 text-tab-muted">
-                                    <IconMenuLeft />
-                                </button>
-                            ) : (
-                                <button onClick={() => setView('feed')} className="p-2 rounded-md hover:bg-stone-200 text-tab-text transition-colors" title="Voltar para Home">
-                                    {ArrowLeft && <ArrowLeft size={20} />}
-                                </button>
-                            )}
+                {/* --- HEADER CONTEXTUAL (Sticky) --- */}
+                <div className="sticky top-0 z-30 bg-tab-bg/95 backdrop-blur-sm border-b border-tab-border px-4 py-3 flex justify-between items-center shadow-sm h-[60px]">
+                    <div className="flex items-center gap-3">
+                        {view === 'feed' ? (
+                            <button onClick={() => setShowLeftSidebar(!showLeftSidebar)} className="p-2 rounded-md hover:bg-stone-200 text-tab-muted">
+                                <IconMenuLeft />
+                            </button>
+                        ) : (
+                            <button onClick={() => setView('feed')} className="p-2 rounded-md hover:bg-stone-200 text-tab-text transition-colors" title="Voltar para Home">
+                                {ArrowLeft && <ArrowLeft size={20} />}
+                            </button>
+                        )}
 
-                            <h1 className="font-bold text-lg tracking-tight">
-                                {view === 'feed' ? 'Feed' : view === 'profile' ? 'Perfil' : view === 'hashtag' ? 'Tópico' : 'Detalhes'}
-                            </h1>
-                        </div>
+                        <h1 className="font-bold text-lg tracking-tight">
+                            {showUniverses ? 'Universos' : (view === 'feed' ? 'Feed' : view === 'profile' ? 'Perfil' : view === 'hashtag' ? 'Tópico' : 'Detalhes')}
+                        </h1>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {/* Universes Toggle Button */}
+                        <button
+                            onClick={() => setShowUniverses(!showUniverses)}
+                            className={`p-2 rounded-md transition-colors ${showUniverses ? 'bg-tab-accent text-white' : 'hover:bg-stone-200 text-tab-muted'}`}
+                            title="Universos"
+                        >
+                            {Globe ? <Globe size={20} /> : <span className="font-bold">U</span>}
+                        </button>
+
                         <button onClick={() => setShowRightSidebar(!showRightSidebar)} className="p-2 rounded-md hover:bg-stone-200 text-tab-muted">
                             <IconMenuRight />
                         </button>
                     </div>
+                </div>
 
-                    {/* --- VIEW ROUTER --- */}
-                    <div className="p-4 sm:p-6">
-                        {view === 'feed' && (
-                            <>
-                                {/* Tabs Bar */}
-                                <div className="overflow-x-auto hide-scrollbar flex items-center gap-6 mb-6 border-b border-tab-border pb-0">
-                                    {tabs.map(tab => (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => setActiveTabId(tab.id)}
-                                            className={`pb-3 px-1 text-sm font-bold whitespace-nowrap border-b-2 transition-all duration-200 ${activeTabId === tab.id ? 'text-tab-text border-tab-text' : 'text-tab-muted border-transparent hover:text-tab-text'}`}
-                                        >
-                                            {tab.label}
-                                        </button>
-                                    ))}
-                                    <button onClick={() => setShowTabModal(true)} className="pb-3 px-1 text-tab-muted hover:text-tab-accent">
-                                        <IconPlus />
-                                    </button>
-                                </div>
+                {/* --- SLIDING CONTAINER --- */}
+                <div className="relative w-full overflow-hidden" style={{ height: 'calc(100vh - 60px)' }}>
+                    <div
+                        className={`flex w-[200%] h-full transition-transform duration-500 ease-in-out will-change-transform ${showUniverses ? '-translate-x-1/2' : 'translate-x-0'}`}
+                    >
 
-                                {/* Create Post Box */}
-                                <CreatePostBox onPostCreate={handlePostCreate} />
+                        {/* LEFT SIDE: FEED APP */}
+                        <div className="w-1/2 shrink-0 h-full overflow-y-auto custom-scrollbar">
+                            <div className="max-w-3xl mx-auto w-full p-4 sm:p-6 pb-20">
+                                {view === 'feed' && (
+                                    <>
+                                        <div className="overflow-x-auto hide-scrollbar flex items-center gap-6 mb-6 border-b border-tab-border pb-0">
+                                            {tabs.map(tab => (
+                                                <button
+                                                    key={tab.id}
+                                                    onClick={() => setActiveTabId(tab.id)}
+                                                    className={`pb-3 px-1 text-sm font-bold whitespace-nowrap border-b-2 transition-all duration-200 ${activeTabId === tab.id ? 'text-tab-text border-tab-text' : 'text-tab-muted border-transparent hover:text-tab-text'}`}
+                                                >
+                                                    {tab.label}
+                                                </button>
+                                            ))}
+                                            <button onClick={() => setShowTabModal(true)} className="pb-3 px-1 text-tab-muted hover:text-tab-accent">
+                                                <IconPlus />
+                                            </button>
+                                        </div>
 
-                                {/* Feed List */}
-                                <div className="space-y-4">
-                                    {filteredPosts.map(post => (
-                                        <PostItem
-                                            key={post.id}
-                                            post={post}
-                                            onArticleClick={handleArticleClick}
-                                            onArticleVoteAttempt={handleArticleVoteAttempt}
-                                            onCommentClick={handleCommentClick}
-                                            onPostClick={handlePostClick}
-                                            onHashClick={handleHashClick}
-                                        />
-                                    ))}
-                                    {filteredPosts.length === 0 && <p className="text-center text-tab-muted">Nenhum post encontrado.</p>}
-                                </div>
-                            </>
-                        )}
+                                        <CreatePostBox onPostCreate={handlePostCreate} />
 
-                        {view === 'profile' && (
-                            <ProfileView
-                                user={MOCK_USER}
-                                onBack={() => setView('feed')}
-                                onHashClick={handleHashClick}
-                                onPostClick={handlePostClick}
+                                        <div className="space-y-4">
+                                            {filteredPosts.map(post => (
+                                                <PostItem
+                                                    key={post.id}
+                                                    post={post}
+                                                    onArticleClick={handleArticleClick}
+                                                    onArticleVoteAttempt={handleArticleVoteAttempt}
+                                                    onCommentClick={handleCommentClick}
+                                                    onPostClick={handlePostClick}
+                                                    onHashClick={handleHashClick}
+                                                />
+                                            ))}
+                                            {filteredPosts.length === 0 && <p className="text-center text-tab-muted">Nenhum post encontrado.</p>}
+                                        </div>
+                                    </>
+                                )}
+
+                                {view === 'profile' && (
+                                    <ProfileView
+                                        user={MOCK_USER}
+                                        onBack={() => setView('feed')}
+                                        onHashClick={handleHashClick}
+                                        onPostClick={handlePostClick}
+                                    />
+                                )}
+
+                                {view === 'hashtag' && selectedTag && (
+                                    <HashtagView
+                                        tag={selectedTag}
+                                        onBack={() => setView('feed')}
+                                        onHashClick={handleHashClick}
+                                        onPostClick={handlePostClick}
+                                    />
+                                )}
+
+                                {view === 'post' && selectedPost && (
+                                    <PostDetailView
+                                        post={selectedPost}
+                                        onBack={() => setView('feed')}
+                                        onHashClick={handleHashClick}
+                                    />
+                                )}
+                            </div>
+                        </div>
+
+                        {/* RIGHT SIDE: UNIVERSES IFRAME */}
+                        <div className="w-1/2 shrink-0 h-full bg-stone-900">
+                            {/* Use key to force reload if needed, or keeping it helps maintain state */}
+                            <iframe
+                                src={window.INITIAL_DATA.urls.universes}
+                                className="w-full h-full border-none"
+                                title="Universos"
                             />
-                        )}
-
-                        {view === 'hashtag' && selectedTag && (
-                            <HashtagView
-                                tag={selectedTag}
-                                onBack={() => setView('feed')}
-                                onHashClick={handleHashClick}
-                                onPostClick={handlePostClick}
-                            />
-                        )}
-
-                        {view === 'post' && selectedPost && (
-                            <PostDetailView
-                                post={selectedPost}
-                                onBack={() => setView('feed')}
-                                onHashClick={handleHashClick}
-                            />
-                        )}
+                        </div>
                     </div>
                 </div>
             </main>
@@ -788,3 +824,4 @@ const MainApp = () => {
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<MainApp />);
+
