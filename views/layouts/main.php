@@ -40,7 +40,9 @@ AppAsset::register($this);
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
         rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
 
     <script>
         tailwind.config = {
@@ -252,6 +254,32 @@ AppAsset::register($this);
 
 
 
+
+
+    <!-- TabWiter App Components -->
+    <script type="text/babel" src="<?= Url::to('@web/js/data/mockData.js') ?>"></script>
+
+    <script type="text/babel" src="<?= Url::to('@web/js/ui/Icons.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/ui/Button.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/ui/Modal.js') ?>"></script>
+
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/BrazilButtons.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/NotificationDrawer.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/ChatDock.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/SidebarLeft.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/SidebarRight.js') ?>"></script>
+
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/VoteWidget.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/ContentParser.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/PostItem.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/CreatePostBox.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/HashtagView.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/PostDetailView.js') ?>"></script>
+
+    <script type="text/babel" src="<?= Url::to('@web/js/components/profile/ProfileView.js') ?>"></script>
+
+    <!-- Main App Entry Point -->
+    <script type="text/babel" src="<?= Url::to('@web/js/tabwiter-app.js') ?>"></script>
 
     <?php $this->endBody() ?>
 </body>
