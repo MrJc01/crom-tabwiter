@@ -5,7 +5,8 @@ const Icons = window.lucideReact || window.lucide || {};
 const {
     Home, Hash, User, Bell, Mail, Bookmark, MoreHorizontal, Code2,
     MessageSquare, Repeat, Share, ShieldCheck, Terminal, FileText,
-    PenTool, X, Search, ExternalLink, MapPin, Calendar, ArrowLeft, Globe
+    PenTool, X, Search, ExternalLink, MapPin, Calendar, ArrowLeft, Globe,
+    Activity
 } = Icons;
 
 // --- SVGs Inline (Garantia de Interface) ---
@@ -233,6 +234,100 @@ const PostItem = ({ post, onCommentClick, onArticleClick, onArticleVoteAttempt, 
                 </div>
             </div>
         </article>
+    );
+};
+
+// --- Brazil Header Components ---
+// --- Brazil Header Components ---
+const BrazilButtons = ({ onGreenClick }) => {
+    return (
+        <div className="absolute top-full right-32 flex gap-3 h-auto z-40 items-start">
+            {/* Green */}
+            <div className="group flex flex-col items-center">
+                <button
+                    onClick={onGreenClick}
+                    className="w-10 h-3 group-hover:h-16 bg-[#009c3b] rounded-b-lg shadow-md transition-all duration-300 ease-in-out flex items-end justify-center pb-3 overflow-hidden"
+                >
+                    <span className="material-symbols-rounded text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-2xl select-none">notifications</span>
+                </button>
+            </div>
+            {/* Yellow */}
+            <div className="group flex flex-col items-center">
+                <button
+                    className="w-10 h-3 group-hover:h-14 bg-[#ffdf00] rounded-b-lg shadow-md transition-all duration-300 ease-in-out flex items-end justify-center pb-3 overflow-hidden"
+                >
+                    <span className="material-symbols-rounded text-[#002776] opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-2xl select-none">trending_up</span>
+                </button>
+            </div>
+            {/* Blue */}
+            <div className="group flex flex-col items-center">
+                <button
+                    className="w-10 h-3 group-hover:h-12 bg-[#002776] rounded-b-lg shadow-md transition-all duration-300 ease-in-out flex items-end justify-center pb-3 overflow-hidden"
+                >
+                    <span className="material-symbols-rounded text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-2xl select-none">chat</span>
+                </button>
+            </div>
+        </div>
+    );
+};
+
+const NotificationDrawer = ({ isOpen, onClose }) => {
+    const [activeTab, setActiveTab] = useState('all'); // all, mentions, system
+
+    return (
+        <>
+            {/* Backdrop */}
+            <div
+                className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                onClick={onClose}
+            ></div>
+
+            {/* Drawer */}
+            <div className={`fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl bg-white rounded-b-3xl shadow-2xl z-[70] transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) transform origin-top ${isOpen ? 'h-[90vh] translate-y-0 opacity-100' : 'h-[90vh] -translate-y-full opacity-50'} overflow-hidden flex flex-col`}>
+                <div className="p-6 border-b border-stone-100 flex items-center justify-between bg-white z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-[#009c3b]">
+                            {Bell && <Bell size={20} />}
+                        </div>
+                        <h2 className="text-2xl font-bold text-tab-text">Notificações</h2>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full text-tab-muted transition-colors">{X && <X size={24} />}</button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex px-6 border-b border-stone-100 bg-white z-10">
+                    {['all', 'mentions', 'system'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-6 py-4 font-bold text-sm transition-colors border-b-2 ${activeTab === tab ? 'border-[#009c3b] text-[#009c3b]' : 'border-transparent text-tab-muted hover:text-tab-text'}`}
+                        >
+                            {tab === 'all' ? 'Todas' : tab === 'mentions' ? 'Menções' : 'Sistema'}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-6 bg-stone-50 custom-scrollbar">
+                    <div className="space-y-4 max-w-2xl mx-auto">
+                        {/* Mock Notifications */}
+                        {[1, 2, 3, 4, 5].map(i => (
+                            <div key={i} className="bg-white p-4 rounded-xl border border-stone-100 shadow-sm flex gap-4 hover:border-stone-300 transition-colors animate-enter" style={{ animationDelay: `${i * 50}ms` }}>
+                                <div className="w-12 h-12 rounded-full bg-blue-50 text-[#002776] flex-shrink-0 flex items-center justify-center">
+                                    {i % 2 === 0 ? (MessageSquare && <MessageSquare size={20} />) : (Terminal && <Terminal size={20} />)}
+                                </div>
+                                <div>
+                                    <p className="text-stone-800 text-sm leading-relaxed">
+                                        <span className="font-bold">Sistema:</span> Bem-vindo ao novo TabWiter! Experimente o recurso Universos clicando no ícone do globo.
+                                    </p>
+                                    <span className="text-xs text-tab-muted font-medium mt-1 block">Há {i} horas</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </>
     );
 };
 
@@ -501,6 +596,7 @@ const MainApp = () => {
     const [showRightSidebar, setShowRightSidebar] = useState(false);
 
     const [modalConfig, setModalConfig] = useState(null);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     // Data State
     const [posts, setPosts] = useState(INITIAL_POSTS);
@@ -597,6 +693,8 @@ const MainApp = () => {
             {/* Popups */}
             {modalConfig && <Modal {...modalConfig} />}
 
+            <NotificationDrawer isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
+
             {/* --- Left Sidebar --- */}
             <>
                 {showLeftSidebar && (
@@ -654,7 +752,7 @@ const MainApp = () => {
             `}>
 
                 {/* --- HEADER CONTEXTUAL (Sticky) --- */}
-                <div className="sticky top-0 z-30 bg-tab-bg/95 backdrop-blur-sm border-b border-tab-border px-4 py-3 flex justify-between items-center shadow-sm h-[60px]">
+                <div className="sticky top-0 z-30 bg-tab-bg/95 backdrop-blur-sm border-b border-tab-border px-4 py-3 flex justify-between items-center shadow-sm h-[60px] relative">
                     <div className="flex items-center gap-3">
                         {view === 'feed' ? (
                             <button onClick={() => setShowLeftSidebar(!showLeftSidebar)} className="p-2 rounded-md hover:bg-stone-200 text-tab-muted">
@@ -671,11 +769,14 @@ const MainApp = () => {
                         </h1>
                     </div>
 
+                    {/* Brazil Buttons Positioned Absolutely */}
+                    <BrazilButtons onGreenClick={() => setShowNotifications(true)} />
+
                     <div className="flex items-center gap-2">
                         {/* Universes Toggle Button */}
                         <button
                             onClick={() => setShowUniverses(!showUniverses)}
-                            className={`p-2 rounded-md transition-colors ${showUniverses ? 'bg-tab-accent text-white' : 'hover:bg-stone-200 text-tab-muted'}`}
+                            className={`p-2 rounded-md transition-colors ${showUniverses ? 'bg-tab-accent text-white' : 'text-tab-muted hover:bg-stone-200'}`}
                             title="Universos"
                         >
                             {Globe ? <Globe size={20} /> : <span className="font-bold">U</span>}
