@@ -20,7 +20,7 @@ const { MOCK_USER, TRENDING_TABS, INITIAL_POSTS, MOCK_CHATS, MOCK_COMMUNITIES } 
 const { Button, Modal } = window;
 
 // Layout Components
-const { BrazilButtons, NotificationDrawer, ChatDock, ChatClipTab, ChatPanel, SidebarLeft, SidebarRight } = window;
+const { BrazilButtons, NotificationDrawer, ChatDock, ChatClipTab, ChatPanel, VideoDock, VideoClipTab, VideoPanel, SidebarLeft, SidebarRight } = window;
 
 // Feed Components
 const { VoteWidget, ContentParser, PostItem, CreatePostBox, HashtagView, PostDetailView } = window;
@@ -53,6 +53,8 @@ const MainApp = () => {
     // Chat State
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [isChatMaximized, setIsChatMaximized] = useState(false);
+    const [isVideoDockOpen, setIsVideoDockOpen] = useState(false);
+    const [isVideoDockMaximized, setIsVideoDockMaximized] = useState(false);
 
     // Data State
     const [posts, setPosts] = useState(INITIAL_POSTS);
@@ -156,6 +158,10 @@ const MainApp = () => {
                 isMaximized={isChatMaximized}
                 toggleMaximize={() => setIsChatMaximized(!isChatMaximized)}
             />
+            <VideoDock
+                isOpen={isVideoDockOpen}
+                toggleOpen={() => setIsVideoDockOpen(!isVideoDockOpen)}
+            />
 
             {/* --- Left Sidebar --- */}
             <SidebarLeft
@@ -215,16 +221,35 @@ const MainApp = () => {
                 {/* --- CONTENT AREA (Feed + Chat split) --- */}
                 <div className="flex w-full overflow-hidden" style={{ height: 'calc(100vh - 60px)' }}>
 
+                    {/* === Video Panel (Left inline, shares space) === */}
+                    {isVideoDockOpen && (
+                        <div className={`
+                        h-full border-r border-tab-border transition-all duration-500 ease-in-out flex-shrink-0
+                        ${isVideoDockMaximized
+                                ? 'w-full'
+                                : 'w-full lg:w-[40%]'
+                            }
+                    `}>
+                            <VideoPanel
+                                onClose={() => { setIsVideoDockOpen(false); setIsVideoDockMaximized(false); }}
+                                isMaximized={isVideoDockMaximized}
+                                toggleMaximize={() => setIsVideoDockMaximized(!isVideoDockMaximized)}
+                            />
+                        </div>
+                    )}
+
                     {/* === Feed / Universes Side === */}
                     <div className={`
-                        h-full transition-all duration-500 ease-in-out flex-shrink-0
-                        ${isChatMaximized
+                    h-full transition-all duration-500 ease-in-out flex-shrink-0
+                    ${isChatMaximized || isVideoDockMaximized
                             ? 'w-0 overflow-hidden'
-                            : isChatOpen
-                                ? 'hidden lg:block lg:w-[60%]'
-                                : 'w-full'
+                            : isChatOpen && isVideoDockOpen
+                                ? 'hidden lg:block lg:w-[20%]' // Squished if both open!
+                                : isChatOpen || isVideoDockOpen
+                                    ? 'hidden lg:block lg:w-[60%]'
+                                    : 'w-full'
                         }
-                    `}>
+                `}>
                         {/* Sliding container for Feed <-> Universes */}
                         <div className="relative w-full h-full overflow-hidden">
                             <div

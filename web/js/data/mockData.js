@@ -38,8 +38,17 @@ window.MOCK_CHATS = [
     { id: 3, type: 'direct', user: MOCK_USERS[3], lastMessage: 'Vamos marcar aquele café?', time: 'Segunda', unread: 0 },
 ];
 
+
 window.MOCK_COMMUNITIES = [
     { id: 101, type: 'group', name: 'Rust Lang Brasil', members: 1420, lastMessage: 'Alguém indo pra RustConf?', time: '09:15', unread: 5 },
     { id: 102, type: 'group', name: 'Frontend BR', members: 3500, lastMessage: 'React 19 tá chegando...', time: '11:00', unread: 12 },
     { id: 103, type: 'group', name: 'TabNews Off-Topic', members: 800, lastMessage: 'Qual melhor cadeira ergonômica?', time: '08:45', unread: 0 },
+];
+
+window.MOCK_VIDEOS = [
+    { id: '1', type: 'youtube', videoId: 'LXb3EKWsInQ', title: 'YouTube Embed' },
+    { id: '2', type: 'tiktok', videoId: '7504695426298154248', title: 'TikTok Embed Trend' },
+    { id: '3', type: 'youtube', videoId: 'jfKfPfyJRdk', title: 'Lofi Girl' },
+    { id: '4', type: 'tiktok', videoId: '7504695426298154248', title: 'TikTok Coding (Dup)' }, // Using valid ID for demo
+    { id: '5', type: 'youtube', videoId: '5qap5aO4i9A', title: 'Lofi Boy' },
 ];

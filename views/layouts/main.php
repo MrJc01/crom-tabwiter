@@ -266,6 +266,8 @@ AppAsset::register($this);
     <script type="text/babel" src="<?= Url::to('@web/js/components/layout/BrazilButtons.js') ?>"></script>
     <script type="text/babel" src="<?= Url::to('@web/js/components/layout/NotificationDrawer.js') ?>"></script>
     <script type="text/babel" src="<?= Url::to('@web/js/components/layout/ChatDock.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/feed/VideoCard.js') ?>"></script>
+    <script type="text/babel" src="<?= Url::to('@web/js/components/layout/VideoDock.js') ?>"></script>
     <script type="text/babel" src="<?= Url::to('@web/js/components/layout/SidebarLeft.js') ?>"></script>
     <script type="text/babel" src="<?= Url::to('@web/js/components/layout/SidebarRight.js') ?>"></script>
 

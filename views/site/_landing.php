@@ -1,7 +1,7 @@
 <?php
 use yii\helpers\Url;
 ?>
-<div class="bg-white min-h-screen flex items-center justify-center relative">
+<div class="bg-white min-h-screen flex items-center justify-center relative" style="z-index:100">
     <!-- Hero Section -->
     <div class="relative overflow-hidden w-full">
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
